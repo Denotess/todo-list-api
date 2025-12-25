@@ -12,5 +12,6 @@ func main() {
 	router := gin.Default()
 	router.GET("/ping", handlers.Ping)
 	router.POST("/register", handlers.Register)
+	router.POST("/login", handlers.Login)
 	router.Run()
 }

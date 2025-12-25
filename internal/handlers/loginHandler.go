@@ -16,6 +16,10 @@ func Login(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid json"})
 		return
 	}
+	if user.Name == "" || user.Password == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "name and password required"})
+		return
+	}
 	exists, err := helpers.CheckDuplicateUser(user.Name)
 	if err != nil {
 		log.Println("error while checking if user exists")
