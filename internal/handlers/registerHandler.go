@@ -7,15 +7,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"main.go/internal/db"
 	"main.go/internal/helpers"
+	"main.go/internal/models"
 )
 
-type User struct {
-	Name     string `json:"name"`
-	Password string `json:"password"`
-}
-
 func Register(ctx *gin.Context) {
-	var user User
+	var user models.User
 	if err := ctx.ShouldBindJSON(&user); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid JSON"})
 		return
