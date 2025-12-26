@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"main.go/internal/db"
@@ -70,7 +71,16 @@ func AddTodo(ctx *gin.Context) {
 		return
 	}
 	var CreateTodo models.CreateTodo
-	ctx.ShouldBindJSON(&CreateTodo)
+	if err := ctx.ShouldBindJSON(&CreateTodo); err != nil {
+		log.Println("json body error")
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "incorrect body parameters"})
+		return
+	}
+	if strings.TrimSpace(CreateTodo.Content) == " " || strings.TrimSpace(CreateTodo.Title) == " " {
+		log.Println("Content or title cannot be empty")
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "content or title cannot be empty"})
+		return
+	}
 
 	_, err = db.DB.Exec("INSERT INTO todos (user_id, title, content, is_done) VALUES (?, ?, ?, ?)", userId, CreateTodo.Title, CreateTodo.Content, CreateTodo.IsDone)
 	if err != nil {
@@ -79,4 +89,29 @@ func AddTodo(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"title": CreateTodo.Title, "content": CreateTodo.Content})
+}
+
+func DeleteTodo(ctx *gin.Context) {
+	userIdStr := ctx.Param("id") // JWT later
+	userId, err := strconv.ParseInt(userIdStr, 10, 64)
+	if err != nil {
+		log.Println("error while parsing int")
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+		return
+	}
+	todoIdStr := ctx.Param("todoId") // JWT later
+	todoId, err := strconv.ParseInt(todoIdStr, 10, 64)
+	if err != nil {
+		log.Println("error while parsing int")
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid todo id"})
+		return
+	}
+
+	_, err = db.DB.Exec("DELETE FROM todos WHERE id = ? AND user_id = ?;", todoId, userId)
+	if err != nil {
+		log.Println("error while deleting todo")
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		return
+	}
+	ctx.Status(http.StatusNoContent)
 }

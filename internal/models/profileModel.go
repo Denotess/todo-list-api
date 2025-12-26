@@ -6,8 +6,6 @@ type Todo struct {
 	Title   string
 	Content string
 	IsDone  int
-	Limit   int
-	Offset  int
 }
 
 type TodoQuery struct {
