@@ -11,12 +11,13 @@ import (
 	"main.go/internal/models"
 )
 
-func GetProfile(ctx *gin.Context) {
-	userIdStr := ctx.Param("id")
+func GetTodos(ctx *gin.Context) {
+	userIdStr := ctx.Param("id") // JWT later
 	userId, err := strconv.ParseInt(userIdStr, 10, 64)
 	if err != nil {
 		log.Println("error while parsing int")
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+		return
 	}
 	var query models.TodoQuery
 	if err := ctx.ShouldBindQuery(&query); err != nil {
@@ -24,7 +25,17 @@ func GetProfile(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "wrong query parameters"})
 		return
 	}
-	rows, err := db.DB.Query("SELECT id, user_id, title, content, is_done FROM todos WHERE user_id = ? ORDER BY id DESC LIMIT ? OFFSET ?;", userId, &query.Limit, &query.Offset)
+	if query.Limit <= 0 {
+		query.Limit = 20
+	}
+	if query.Limit > 100 {
+		query.Limit = 100
+	}
+	if query.Offset < 0 {
+		query.Offset = 0
+	}
+
+	rows, err := db.DB.Query("SELECT id, user_id, title, content, is_done FROM todos WHERE user_id = ? ORDER BY id DESC LIMIT ? OFFSET ?;", userId, query.Limit, query.Offset)
 	if err != nil {
 		log.Println("error while querying profile data from db")
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
@@ -34,7 +45,7 @@ func GetProfile(ctx *gin.Context) {
 	todos := make([]models.Todo, 0)
 	for rows.Next() {
 		var t models.Todo
-		if err := rows.Scan(&t.Id, &t.UserId, &t.Title, &t.Content, t.IsDone); err != nil {
+		if err := rows.Scan(&t.Id, &t.UserId, &t.Title, &t.Content, &t.IsDone); err != nil {
 			fmt.Println("error while scanning rows in profileHandler")
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 			return
@@ -49,4 +60,23 @@ func GetProfile(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{"todos": todos, "page": models.Page(&query), "limit": query.Limit, "offset": query.Offset})
 
+}
+func AddTodo(ctx *gin.Context) {
+	userIdStr := ctx.Param("id") // JWT later
+	userId, err := strconv.ParseInt(userIdStr, 10, 64)
+	if err != nil {
+		log.Println("error while parsing int")
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+		return
+	}
+	var CreateTodo models.CreateTodo
+	ctx.ShouldBindJSON(&CreateTodo)
+
+	_, err = db.DB.Exec("INSERT INTO todos (user_id, title, content, is_done) VALUES (?, ?, ?, ?)", userId, CreateTodo.Title, CreateTodo.Content, CreateTodo.IsDone)
+	if err != nil {
+		log.Println("error while inserting todos")
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"title": CreateTodo.Title, "content": CreateTodo.Content})
 }

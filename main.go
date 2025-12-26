@@ -13,5 +13,7 @@ func main() {
 	router.GET("/ping", handlers.Ping)
 	router.POST("/register", handlers.Register)
 	router.POST("/login", handlers.Login)
+	router.GET("/users/:id/todos", handlers.GetTodos)
+	router.POST("/users/:id/todos", handlers.AddTodo)
 	router.Run()
 }

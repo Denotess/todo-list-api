@@ -22,3 +22,9 @@ func Page(q *TodoQuery) int {
 	}
 	return page
 }
+
+type CreateTodo struct {
+	Title   string `json:"title"`
+	Content string `json:"content"`
+	IsDone  int    `json:"is_done"`
+}
