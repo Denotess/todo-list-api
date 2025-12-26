@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"main.go/internal/db"
@@ -11,13 +12,19 @@ import (
 )
 
 func GetProfile(ctx *gin.Context) {
+	userIdStr := ctx.Param("id")
+	userId, err := strconv.ParseInt(userIdStr, 10, 64)
+	if err != nil {
+		log.Println("error while parsing int")
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+	}
 	var query models.TodoQuery
 	if err := ctx.ShouldBindQuery(&query); err != nil {
 		log.Println("error while binding query")
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "wrong query parameters"})
 		return
 	}
-	rows, err := db.DB.Query("SELECT id, user_id, title, content, is_done FROM todos WHERE user_id = ? ORDER BY id DESC LIMIT ? OFFSET ?;", &todoData.UserId, &query.Limit, &query.Offset)
+	rows, err := db.DB.Query("SELECT id, user_id, title, content, is_done FROM todos WHERE user_id = ? ORDER BY id DESC LIMIT ? OFFSET ?;", userId, &query.Limit, &query.Offset)
 	if err != nil {
 		log.Println("error while querying profile data from db")
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
