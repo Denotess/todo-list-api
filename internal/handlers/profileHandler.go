@@ -13,8 +13,13 @@ import (
 )
 
 func GetTodos(ctx *gin.Context) {
-	userIdStr := ctx.Param("id") // JWT later
-	userId, err := strconv.ParseInt(userIdStr, 10, 64)
+	userIdStr, ok := ctx.Get("userId")
+	if !ok {
+		log.Println("no id in jwt")
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "missing user id"})
+		return
+	}
+	userId, err := strconv.ParseInt(userIdStr.(string), 10, 64)
 	if err != nil {
 		log.Println("error while parsing int")
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
@@ -63,8 +68,13 @@ func GetTodos(ctx *gin.Context) {
 
 }
 func AddTodo(ctx *gin.Context) {
-	userIdStr := ctx.Param("id") // JWT later
-	userId, err := strconv.ParseInt(userIdStr, 10, 64)
+	userIdStr, ok := ctx.Get("userId")
+	if !ok {
+		log.Println("no id in jwt")
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "missing user id"})
+		return
+	}
+	userId, err := strconv.ParseInt(userIdStr.(string), 10, 64)
 	if err != nil {
 		log.Println("error while parsing int")
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
@@ -76,7 +86,7 @@ func AddTodo(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "incorrect body parameters"})
 		return
 	}
-	if strings.TrimSpace(CreateTodo.Content) == " " || strings.TrimSpace(CreateTodo.Title) == " " {
+	if strings.TrimSpace(CreateTodo.Content) == "" || strings.TrimSpace(CreateTodo.Title) == "" {
 		log.Println("Content or title cannot be empty")
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "content or title cannot be empty"})
 		return
@@ -92,8 +102,13 @@ func AddTodo(ctx *gin.Context) {
 }
 
 func DeleteTodo(ctx *gin.Context) {
-	userIdStr := ctx.Param("id") // JWT later
-	userId, err := strconv.ParseInt(userIdStr, 10, 64)
+	userIdStr, ok := ctx.Get("userId")
+	if !ok {
+		log.Println("no id in jwt")
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "missing user id"})
+		return
+	}
+	userId, err := strconv.ParseInt(userIdStr.(string), 10, 64)
 	if err != nil {
 		log.Println("error while parsing int")
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
@@ -118,8 +133,13 @@ func DeleteTodo(ctx *gin.Context) {
 
 func UpdateTodo(ctx *gin.Context) {
 	// could improove with canonicalization
-	userIdStr := ctx.Param("id") // JWT later
-	userId, err := strconv.ParseInt(userIdStr, 10, 64)
+	userIdStr, ok := ctx.Get("userId")
+	if !ok {
+		log.Println("no id in jwt")
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "missing user id"})
+		return
+	}
+	userId, err := strconv.ParseInt(userIdStr.(string), 10, 64)
 	if err != nil {
 		log.Println("error while parsing int")
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
@@ -162,11 +182,6 @@ func UpdateTodo(ctx *gin.Context) {
 	if query.IsDone != nil {
 		isDone = *query.IsDone
 	}
-
-	_, err = db.DB.Exec(
-		"UPDATE todos SET title = COALESCE(?, title), content = COALESCE(?, content), is_done = COALESCE(?, is_done) WHERE user_id = ? AND id = ?;",
-		title, content, isDone, userId, todoId,
-	)
 
 	_, err = db.DB.Exec(
 		"UPDATE todos SET title = COALESCE(?, title), content = COALESCE(?, content), is_done = COALESCE(?, is_done) WHERE user_id = ? AND id = ?;",

@@ -32,7 +32,7 @@ func Login(ctx *gin.Context) {
 		return
 	}
 	var hashedPass string
-	if err := db.DB.QueryRow("SELECT password_hash FROM users WHERE name = ?", user.Name).Scan(&hashedPass); err != nil {
+	if err := db.DB.QueryRow("SELECT id, password_hash FROM users WHERE name = ?", user.Name).Scan(&user.Id, &hashedPass); err != nil {
 		log.Println("error while selectin password from db")
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
@@ -48,5 +48,10 @@ func Login(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "incorrect password"})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"message": "succesfull login"}) // returns a token here
+	token, err := helpers.CreateToken(&user)
+	if err != nil {
+		log.Println("error while creating token", err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+	}
+	ctx.JSON(http.StatusOK, gin.H{"message": "succesfull login", "token": token}) // returns a token here
 }
