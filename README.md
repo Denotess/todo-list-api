@@ -62,3 +62,5 @@ Protected (requires `Authorization: Bearer <token>`):
 ## Notes
 - Access tokens are verified on each protected request.
 - The database is stored in `app.db`.
+
+[Project link](https://roadmap.sh/projects/todo-list-api)
