@@ -132,9 +132,46 @@ func UpdateTodo(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid todo id"})
 		return
 	}
+
 	var query models.UpdateTodo
-	ctx.ShouldBindJSON(&query)
-	_, err = db.DB.Exec("UPDATE todos SET title = COALESCE(?, title), content = COALESCE(?, content), is_done = COALESCE(?, is_done) WHERE user_id = ? AND id = ?;", query.Title, query.Content, query.IsDone, userId, todoId)
+	if err := ctx.ShouldBindJSON(&query); err != nil {
+		fmt.Println("error while binding json")
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid json body"})
+		return
+	}
+	if query.Title == nil && query.Content == nil && query.IsDone == nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "no fields to update"})
+		return
+	}
+	var title, content, isDone any
+
+	if query.Title != nil {
+		if strings.TrimSpace(*query.Title) == "" {
+		} else {
+			title = *query.Title
+		}
+	}
+
+	if query.Content != nil {
+		if strings.TrimSpace(*query.Content) == "" {
+		} else {
+			content = *query.Content
+		}
+	}
+
+	if query.IsDone != nil {
+		isDone = *query.IsDone
+	}
+
+	_, err = db.DB.Exec(
+		"UPDATE todos SET title = COALESCE(?, title), content = COALESCE(?, content), is_done = COALESCE(?, is_done) WHERE user_id = ? AND id = ?;",
+		title, content, isDone, userId, todoId,
+	)
+
+	_, err = db.DB.Exec(
+		"UPDATE todos SET title = COALESCE(?, title), content = COALESCE(?, content), is_done = COALESCE(?, is_done) WHERE user_id = ? AND id = ?;",
+		title, content, isDone, userId, todoId,
+	)
 	if err != nil {
 		log.Println("error while updating todo")
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})

@@ -28,7 +28,7 @@ type CreateTodo struct {
 }
 
 type UpdateTodo struct {
-	Title   string `json:"title"`
-	Content string `json:"content"`
-	IsDone  int    `json:"is_done"`
+	Title   *string `json:"title"`
+	Content *string `json:"content"`
+	IsDone  *int    `json:"is_done"`
 }
