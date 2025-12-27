@@ -15,6 +15,7 @@ func main() {
 	router.POST("/login", handlers.Login)
 	router.GET("/users/:id/todos", handlers.GetTodos)
 	router.POST("/users/:id/todos", handlers.AddTodo)
-	router.DELETE("/users/:id/todos/:todoId", handlers.AddTodo)
+	router.DELETE("/users/:id/todos/:todoId", handlers.DeleteTodo)
+	router.PUT("/users/:id/todos/:todoId", handlers.UpdateTodo)
 	router.Run()
 }

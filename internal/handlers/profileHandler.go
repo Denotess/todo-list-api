@@ -115,3 +115,31 @@ func DeleteTodo(ctx *gin.Context) {
 	}
 	ctx.Status(http.StatusNoContent)
 }
+
+func UpdateTodo(ctx *gin.Context) {
+	// could improove with canonicalization
+	userIdStr := ctx.Param("id") // JWT later
+	userId, err := strconv.ParseInt(userIdStr, 10, 64)
+	if err != nil {
+		log.Println("error while parsing int")
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+		return
+	}
+	todoIdStr := ctx.Param("todoId") // JWT later
+	todoId, err := strconv.ParseInt(todoIdStr, 10, 64)
+	if err != nil {
+		log.Println("error while parsing int")
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid todo id"})
+		return
+	}
+	var query models.UpdateTodo
+	ctx.ShouldBindJSON(&query)
+	_, err = db.DB.Exec("UPDATE todos SET title = COALESCE(?, title), content = COALESCE(?, content), is_done = COALESCE(?, is_done) WHERE user_id = ? AND id = ?;", query.Title, query.Content, query.IsDone, userId, todoId)
+	if err != nil {
+		log.Println("error while updating todo")
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"title": query.Title, "content": query.Content})
+
+}
