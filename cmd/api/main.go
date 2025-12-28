@@ -9,6 +9,8 @@ import (
 	"main.go/internal/db"
 	"main.go/internal/handlers"
 	"main.go/internal/middleware"
+	"main.go/internal/repository"
+	"main.go/internal/service"
 )
 
 func keyFunc(c *gin.Context) string {
@@ -32,6 +34,10 @@ func main() {
 		ErrorHandler: errorHandler,
 		KeyFunc:      keyFunc,
 	})
+	todoRepo := repository.NewTodoRepo(db.DB)
+	todoService := service.NewTodoService(todoRepo)
+	todoHandler := handlers.NewTodoHandler(todoService)
+
 	api := router.Group("/api")
 	api.Use(rateLimiter)
 	{
@@ -39,10 +45,10 @@ func main() {
 		authorized := api.Group("/users")
 		authorized.Use(middleware.AuthMiddleware())
 		{
-			authorized.GET("/todos", handlers.GetTodos)
-			authorized.POST("/todos", handlers.AddTodo)
-			authorized.DELETE("/todos/:todoId", handlers.DeleteTodo)
-			authorized.PUT("/todos/:todoId", handlers.UpdateTodo)
+			authorized.GET("/todos", todoHandler.GetTodos)
+			authorized.POST("/todos", todoHandler.AddTodo)
+			authorized.DELETE("/todos/:todoId", todoHandler.DeleteTodo)
+			authorized.PUT("/todos/:todoId", todoHandler.UpdateTodo)
 		}
 		api.GET("/ping", handlers.Ping)
 		api.POST("/register", handlers.Register)
