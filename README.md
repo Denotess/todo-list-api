@@ -1,6 +1,8 @@
 # Todo List API
 
-Simple REST API for users and todos built with Go, Gin, and SQLite.
+A small JSON API for user accounts and personal todos. It is written in Go using Gin,
+stores data in SQLite, and protects routes with JWTs. The code is split into handlers,
+services, and repositories to keep HTTP, business rules, and SQL separate.
 
 ## Features
 - Register and login with bcrypt-hashed passwords
@@ -21,7 +23,7 @@ JWT_KEY=your-secret-key
 
 ## Run
 ```
-go run main.go
+go run ./cmd/api
 ```
 
 The server starts on `http://localhost:8080`.
@@ -44,6 +46,13 @@ Database:
 
 Rate limiting:
 - In-memory limiter, 5 requests per second per client IP.
+
+Project layout:
+- `cmd/api` holds the API entry point and route wiring.
+- `internal/handlers` contains HTTP handlers.
+- `internal/service` contains business logic and validation.
+- `internal/repository` contains SQL queries.
+- `internal/models` defines request and database models.
 
 ## API
 All routes are under `/api`.
