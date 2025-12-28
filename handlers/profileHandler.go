@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"main.go/internal/db"
-	"main.go/internal/models"
+	"main.go/db"
+	"main.go/models"
 )
 
 func GetTodos(ctx *gin.Context) {
@@ -21,13 +21,13 @@ func GetTodos(ctx *gin.Context) {
 	}
 	userId, err := strconv.ParseInt(userIdStr.(string), 10, 64)
 	if err != nil {
-		log.Println("error while parsing int")
+		log.Println("error while parsing int", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
 		return
 	}
 	var query models.TodoQuery
 	if err := ctx.ShouldBindQuery(&query); err != nil {
-		log.Println("error while binding query")
+		log.Println("error while binding query", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "wrong query parameters"})
 		return
 	}
@@ -43,7 +43,7 @@ func GetTodos(ctx *gin.Context) {
 
 	rows, err := db.DB.Query("SELECT id, user_id, title, content, is_done FROM todos WHERE user_id = ? ORDER BY id DESC LIMIT ? OFFSET ?;", userId, query.Limit, query.Offset)
 	if err != nil {
-		log.Println("error while querying profile data from db")
+		log.Println("error while querying profile data from db", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
 	}
@@ -52,14 +52,14 @@ func GetTodos(ctx *gin.Context) {
 	for rows.Next() {
 		var t models.Todo
 		if err := rows.Scan(&t.Id, &t.UserId, &t.Title, &t.Content, &t.IsDone); err != nil {
-			fmt.Println("error while scanning rows in profileHandler")
+			fmt.Println("error while scanning rows in profileHandler", err)
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 			return
 		}
 		todos = append(todos, t)
 	}
 	if err := rows.Err(); err != nil {
-		log.Println("error while scanning the rows")
+		log.Println("error while scanning the rows", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
 	}
@@ -76,25 +76,25 @@ func AddTodo(ctx *gin.Context) {
 	}
 	userId, err := strconv.ParseInt(userIdStr.(string), 10, 64)
 	if err != nil {
-		log.Println("error while parsing int")
+		log.Println("error while parsing int", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
 		return
 	}
 	var CreateTodo models.CreateTodo
 	if err := ctx.ShouldBindJSON(&CreateTodo); err != nil {
-		log.Println("json body error")
+		log.Println("json body error", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "incorrect body parameters"})
 		return
 	}
 	if strings.TrimSpace(CreateTodo.Content) == "" || strings.TrimSpace(CreateTodo.Title) == "" {
-		log.Println("Content or title cannot be empty")
+		log.Println("Content or title cannot be empty", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "content or title cannot be empty"})
 		return
 	}
 
 	_, err = db.DB.Exec("INSERT INTO todos (user_id, title, content, is_done) VALUES (?, ?, ?, ?)", userId, CreateTodo.Title, CreateTodo.Content, CreateTodo.IsDone)
 	if err != nil {
-		log.Println("error while inserting todos")
+		log.Println("error while inserting todos", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
 	}
@@ -110,21 +110,21 @@ func DeleteTodo(ctx *gin.Context) {
 	}
 	userId, err := strconv.ParseInt(userIdStr.(string), 10, 64)
 	if err != nil {
-		log.Println("error while parsing int")
+		log.Println("error while parsing int", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
 		return
 	}
 	todoIdStr := ctx.Param("todoId") // JWT later
 	todoId, err := strconv.ParseInt(todoIdStr, 10, 64)
 	if err != nil {
-		log.Println("error while parsing int")
+		log.Println("error while parsing int", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid todo id"})
 		return
 	}
 
 	_, err = db.DB.Exec("DELETE FROM todos WHERE id = ? AND user_id = ?;", todoId, userId)
 	if err != nil {
-		log.Println("error while deleting todo")
+		log.Println("error while deleting todo", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
 	}
@@ -141,21 +141,21 @@ func UpdateTodo(ctx *gin.Context) {
 	}
 	userId, err := strconv.ParseInt(userIdStr.(string), 10, 64)
 	if err != nil {
-		log.Println("error while parsing int")
+		log.Println("error while parsing int", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
 		return
 	}
 	todoIdStr := ctx.Param("todoId") // JWT later
 	todoId, err := strconv.ParseInt(todoIdStr, 10, 64)
 	if err != nil {
-		log.Println("error while parsing int")
+		log.Println("error while parsing int", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid todo id"})
 		return
 	}
 
 	var query models.UpdateTodo
 	if err := ctx.ShouldBindJSON(&query); err != nil {
-		fmt.Println("error while binding json")
+		fmt.Println("error while binding json", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid json body"})
 		return
 	}
@@ -188,7 +188,7 @@ func UpdateTodo(ctx *gin.Context) {
 		title, content, isDone, userId, todoId,
 	)
 	if err != nil {
-		log.Println("error while updating todo")
+		log.Println("error while updating todo", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
 	}

@@ -5,9 +5,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"main.go/internal/db"
-	"main.go/internal/helpers"
-	"main.go/internal/models"
+	"main.go/db"
+	"main.go/helpers"
+	"main.go/models"
 )
 
 func Login(ctx *gin.Context) {
@@ -22,7 +22,7 @@ func Login(ctx *gin.Context) {
 	}
 	exists, err := helpers.CheckDuplicateUser(user.Name)
 	if err != nil {
-		log.Println("error while checking if user exists")
+		log.Println("error while checking if user exists", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
 	}
@@ -33,18 +33,18 @@ func Login(ctx *gin.Context) {
 	}
 	var hashedPass string
 	if err := db.DB.QueryRow("SELECT id, password_hash FROM users WHERE name = ?", user.Name).Scan(&user.Id, &hashedPass); err != nil {
-		log.Println("error while selectin password from db")
+		log.Println("error while selectin password from db", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
 	}
 	passwordMatch, err := helpers.CheckPasswordHash(user.Password, hashedPass)
 	if err != nil {
-		log.Println("error while checking if passwords match")
+		log.Println("error while checking if passwords match", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
 	}
 	if !passwordMatch {
-		log.Println("Passwords dont match")
+		log.Println("Passwords dont match", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "incorrect password"})
 		return
 	}

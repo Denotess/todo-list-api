@@ -3,7 +3,7 @@ package helpers
 import (
 	"testing"
 
-	"main.go/internal/models"
+	"main.go/models"
 )
 
 func TestCreateAndVerifyToken(t *testing.T) {
