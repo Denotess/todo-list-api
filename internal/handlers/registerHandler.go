@@ -5,9 +5,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"main.go/db"
-	"main.go/helpers"
-	"main.go/models"
+	"main.go/internal/db"
+	"main.go/internal/helpers"
+	"main.go/internal/models"
 )
 
 func Register(ctx *gin.Context) {

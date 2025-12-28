@@ -3,7 +3,7 @@ package helpers
 import (
 	"database/sql"
 
-	"main.go/db"
+	"main.go/internal/db"
 )
 
 func CheckDuplicateUser(name string) (bool, error) {

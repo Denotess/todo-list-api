@@ -6,9 +6,9 @@ import (
 	ratelimit "github.com/JGLTechnologies/gin-rate-limit"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"main.go/db"
-	"main.go/handlers"
-	"main.go/middleware"
+	"main.go/internal/db"
+	"main.go/internal/handlers"
+	"main.go/internal/middleware"
 )
 
 func keyFunc(c *gin.Context) string {

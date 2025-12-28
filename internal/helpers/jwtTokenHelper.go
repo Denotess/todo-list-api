@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"main.go/models"
+	"main.go/internal/models"
 )
 
 var SecretKey = []byte(os.Getenv("JWT_KEY"))

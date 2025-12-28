@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"main.go/db"
-	"main.go/models"
+	"main.go/internal/db"
+	"main.go/internal/models"
 )
 
 func GetTodos(ctx *gin.Context) {
