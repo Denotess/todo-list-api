@@ -38,6 +38,10 @@ func main() {
 	todoService := service.NewTodoService(todoRepo)
 	todoHandler := handlers.NewTodoHandler(todoService)
 
+	userRepo := repository.NewUserRepo(db.DB)
+	userService := service.NewUserService(userRepo)
+	userHandler := handlers.NewUserHandler(userService)
+
 	api := router.Group("/api")
 	api.Use(rateLimiter)
 	{
@@ -51,8 +55,8 @@ func main() {
 			authorized.PUT("/todos/:todoId", todoHandler.UpdateTodo)
 		}
 		api.GET("/ping", handlers.Ping)
-		api.POST("/register", handlers.Register)
-		api.POST("/login", handlers.Login)
+		api.POST("/register", userHandler.Register)
+		api.POST("/login", userHandler.Login)
 	}
 	router.Run()
 }
