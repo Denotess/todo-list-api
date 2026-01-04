@@ -73,3 +73,4 @@ Protected (requires `Authorization: Bearer <token>`):
 - The database is stored in `app.db`.
 
 [Project link](https://roadmap.sh/projects/todo-list-api)
+[Project link](https://roadmap.sh/projects/expense-tracker-api)
